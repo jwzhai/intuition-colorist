@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>色彩直觉训练 Pro (V11)</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent: #6366f1;
+            --target-glow: rgba(255,255,255,0.1);
+            
+            /* 霓虹色板 */
+            --hue-red: #ff4d4f;
+            --hue-yellow: #fadb14;
+            --hue-green: #4ade80;
+            --hue-cyan: #22d3ee;
+            --hue-blue: #3b82f6;
+            --hue-magenta: #d946ef;
+            --hue-none: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.5s;
+        }
+
+        /* CRT 扫描线效果 (全局) */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 998;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* === 恐怖模式：系统崩溃 (Critical Error) === */
+        body.critical-error {
+            background-color: #1a0000; /* 警报红黑 */
+            animation: bg-pulse 0.1s infinite;
+        }
+        
+        body.critical-error .container {
+            border-color: #ff0000;
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
+            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+        }
+
+        body.critical-error #color-box {
+            filter: invert(1) grayscale(1); /* 颜色反转 */
+        }
+
+        /* 故障动画 */
+        @keyframes glitch-skew {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+        @keyframes bg-pulse {
+            0% { background-color: #1a0000; }
+            50% { background-color: #2b0000; }
+            100% { background-color: #1a0000; }
+        }
+
+        /* 故障文字层 */
+        .glitch-text {
+            position: relative;
+            color: #ff0000;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a0000;
+        }
+        .glitch-text::before {
+            left: 2px; text-shadow: -1px 0 #00ffea; clip-path: inset(0 0 0 0);
+            animation: noise-anim-2 3s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px; text-shadow: -1px 0 #ff005d; clip-path: inset(0 0 0 0);
+            animation: noise-anim 2s infinite linear alternate-reverse;
+        }
+        @keyframes noise-anim {
+            0% { clip-path: inset(10% 0 80% 0); }
+            20% { clip-path: inset(80% 0 1% 0); }
+            40% { clip-path: inset(40% 0 20% 0); }
+            60% { clip-path: inset(10% 0 60% 0); }
+            80% { clip-path: inset(30% 0 10% 0); }
+            100% { clip-path: inset(70% 0 30% 0); }
+        }
+
+        /* === 标准样式 === */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 999;
+        }
+
+        .container {
+            width: 100%; max-width: 420px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 24px;
+            padding: 24px; position: relative;
+            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5), 0 0 80px -40px var(--target-glow);
+            transition: box-shadow 0.5s ease;
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; font-size: 0.9rem; font-weight: 700; color: var(--text-sub);
+        }
+        .header span em { color: var(--accent); font-style: normal; }
+        
+        .hearts { display: flex; gap: 4px; }
+        .heart { opacity: 0.2; transition: all 0.3s; transform: scale(0.9); font-size: 1.2rem; color: #64748b; }
+        .heart.active { opacity: 1; color: #ef4444; transform: scale(1.1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6)); }
+
+        #color-box {
+            width: 100%; height: 160px; border-radius: 18px; margin-bottom: 16px; position: relative;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+            transition: opacity 0.3s ease, background-color 0.5s ease;
+        }
+        #color-box::after {
+            content: ''; position: absolute; inset: 0; border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none;
+        }
+
+        .color-name {
+            text-align: center; font-weight: 800; font-size: 1.4rem; margin-bottom: 24px;
+            background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            min-height: 1.4em;
+        }
+        .color-name.rift {
+            background: linear-gradient(to right, #c084fc, #6366f1); -webkit-background-clip: text;
+            text-shadow: 0 0 15px rgba(192, 132, 252, 0.3);
+        }
+
+        .phase-section { display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .phase-section.active { display: block; opacity: 1; transform: translateY(0); }
+
+        .section-label {
+            font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px; font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-label::before {
+            content: ''; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 8px var(--accent);
+        }
+
+        .control-group { margin-bottom: 20px; }
+        .radio-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 8px; }
+        
+        .radio-btn { position: relative; display: block; cursor: pointer; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
+        .radio-btn input { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; margin: 0; cursor: pointer; z-index: 10; }
+        .radio-btn span {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 42px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-sub);
+            transition: all 0.2s; position: relative; z-index: 1; pointer-events: none;
+        }
+        .radio-btn:active span { transform: scale(0.95); }
+        .radio-btn input:checked + span { background: rgba(255,255,255,0.2); border-color: #fff; color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.3); font-weight: 800; }
+
+        /* Button Colors */
+        .radio-btn input[value="red"]:checked + span { background: var(--hue-red); border-color: var(--hue-red); box-shadow: 0 0 15px rgba(255, 77, 79, 0.6); }
+        .radio-btn input[value="yellow"]:checked + span { background: var(--hue-yellow); border-color: var(--hue-yellow); color: #1a1a1a; box-shadow: 0 0 15px rgba(250, 219, 20, 0.6); }
+        .radio-btn input[value="green"]:checked + span { background: var(--hue-green); border-color: var(--hue-green); color: #064e3b; box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
+        .radio-btn input[value="cyan"]:checked + span { background: var(--hue-cyan); border-color: var(--hue-cyan); color: #083344; box-shadow: 0 0 15px rgba(34, 211, 238, 0.6); }
+        .radio-btn input[value="blue"]:checked + span { background: var(--hue-blue); border-color: var(--hue-blue); color: #fff; box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+        .radio-btn input[value="magenta"]:checked + span { background: var(--hue-magenta); border-color: var(--hue-magenta); color: #fff; box-shadow: 0 0 15px rgba(217, 70, 239, 0.6); }
+        .radio-btn input[value="none"]:checked + span { background: rgba(148, 163, 184, 0.3); border-color: #cbd5e1; color: #e2e8f0; box-shadow: 0 0 10px rgba(148, 163, 184, 0.4); }
+
+        /* RGB Inputs */
+        .input-row { display: flex; gap: 16px; margin: 30px 0; justify-content: center; }
+        .rgb-input-group { display: flex; flex-direction: column; align-items: center; width: 30%; }
+        .rgb-input-group label { font-size: 0.75rem; margin-bottom: 8px; font-weight: 800; letter-spacing: 1px; }
+        .rgb-input {
+            width: 100%; height: 56px; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px; text-align: center; font-family: 'Courier New', Courier, monospace;
+            font-size: 1.4rem; font-weight: bold; color: #fff; transition: all 0.3s; padding: 0;
+            -moz-appearance: textfield;
+        }
+        .rgb-input:focus { outline: none; transform: translateY(-2px); background: rgba(0,0,0,0.6); }
+        .rgb-input.r:focus { border-color: var(--hue-red); box-shadow: 0 0 15px rgba(255, 77, 79, 0.4); }
+        .rgb-input.g:focus { border-color: var(--hue-green); box-shadow: 0 0 15px rgba(74, 222, 128, 0.4); }
+        .rgb-input.b:focus { border-color: var(--hue-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 700; font-size: 1rem;
+            cursor: pointer; margin-top: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #fff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); transition: all 0.2s; letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-sub); box-shadow: none; margin-top: 20px; }
+        /* 恐怖按钮 */
+        .btn.glitch-btn {
+            background: #000; border: 1px solid #ff0000; color: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+            animation: pulse-red 0.5s infinite alternate;
+        }
+        @keyframes pulse-red { from { box-shadow: 0 0 5px #ff0000; } to { box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; } }
+
+        .history-list { margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; max-height: 240px; overflow-y: auto; }
+        .history-item { background: rgba(0,0,0,0.25); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .bar-track { background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; position: relative; margin: 8px 0; }
+        .bar-fill { height: 100%; border-radius: 3px; box-shadow: 0 0 8px currentColor; transition: width 0.6s ease; }
+        .bar-target-marker { background: #fff; width: 2px; height: 12px; top: -3px; position: absolute; box-shadow: 0 0 4px rgba(255,255,255,0.8); z-index: 2; }
+
+        #msg-box { text-align: center; font-weight: 700; margin: 12px 0; min-height: 1.5em; font-size: 0.95rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6); line-height: 1.4; }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+    </style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="container" id="game-container">
+    <div class="header">
+        <span>色彩直觉 <em>Pro</em></span>
+        <div class="hearts" id="lives-display"></div>
+    </div>
+
+    <div id="color-box"></div>
+    <div class="color-name" id="color-name">Loading...</div>
+    <div id="msg-box"></div>
+
+    <!-- Phase 1 -->
+    <div id="phase-1" class="phase-section active">
+        <div class="control-group">
+            <div class="section-label">1. 明暗度</div>
+            <div class="radio-group">
+                <div class="radio-btn"><input type="radio" name="light" value="bright"><span>明亮</span></div>
+                <div class="radio-btn"><input type="radio" name="light" value="dark"><span>暗淡</span></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="section-label">2. 饱和度</div>
+            <div class="radio-group">
+                <div class="radio-btn"><input type="radio" name="sat" value="high"><span>鲜艳</span></div>
+                <div class="radio-btn"><input type="radio" name="sat" value="low"><span>灰蒙</span></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="section-label">3. 主色调 (Primary)</div>
+            <div class="radio-group">
+                <div class="radio-btn"><input type="radio" name="hue1" value="red"><span>红</span></div>
+                <div class="radio-btn"><input type="radio" name="hue1" value="yellow"><span>黄</span></div>
+                <div class="radio-btn"><input type="radio" name="hue1" value="green"><span>绿</span></div>
+                <div class="radio-btn"><input type="radio" name="hue1" value="cyan"><span>青</span></div>
+                <div class="radio-btn"><input type="radio" name="hue1" value="blue"><span>蓝</span></div>
+                <div class="radio-btn"><input type="radio" name="hue1" value="magenta"><span>品红</span></div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="section-label">4. 辅色调 (Secondary)</div>
+            <div class="radio-group">
+                <div class="radio-btn"><input type="radio" name="hue2" value="none"><span>无</span></div>
+                <div class="radio-btn"><input type="radio" name="hue2" value="red"><span>红</span></div>
+                <div class="radio-btn"><input type="radio" name="hue2" value="yellow"><span>黄</span></div>
+                <div class="radio-btn"><input type="radio" name="hue2" value="green"><span>绿</span></div>
+                <div class="radio-btn"><input type="radio" name="hue2" value="cyan"><span>青</span></div>
+                <div class="radio-btn"><input type="radio" name="hue2" value="blue"><span>蓝</span></div>
+                <div class="radio-btn"><input type="radio" name="hue2" value="magenta"><span>品红</span></div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="submitPhase1()">分析颜色光谱</button>
+    </div>
+
+    <!-- Phase 2 -->
+    <div id="phase-2" class="phase-section">
+        <div class="section-label" style="justify-content:center; border:none; opacity:0.8">请输入 RGB 数值 (0-255)</div>
+        <div class="input-row">
+            <div class="rgb-input-group">
+                <label style="color:var(--hue-red)">RED</label>
+                <input type="tel" id="in-r" class="rgb-input r" maxlength="3" placeholder="0">
+            </div>
+            <div class="rgb-input-group">
+                <label style="color:var(--hue-green)">GREEN</label>
+                <input type="tel" id="in-g" class="rgb-input g" maxlength="3" placeholder="0">
+            </div>
+            <div class="rgb-input-group">
+                <label style="color:var(--hue-blue)">BLUE</label>
+                <input type="tel" id="in-b" class="rgb-input b" maxlength="3" placeholder="0">
+            </div>
+        </div>
+        <button class="btn" id="submit-rgb-btn" onclick="submitGuess()">开始匹配</button>
+        <div id="history-log" class="history-list"></div>
+    </div>
+
+    <!-- End Phase -->
+    <div id="phase-end" class="phase-section">
+        <button class="btn secondary" id="next-btn" onclick="handleNextLevel()">⚡ 初始化下一轮校准</button>
+    </div>
+</div>
+
+<script>
+    const classicColors = [
+        {name: "Cyber Yellow", hex: "#ffd300"}, {name: "Neon Blue", hex: "#4d4dff"},
+        {name: "Matrix Green", hex: "#00ff41"}, {name: "Hot Pink", hex: "#ff69b4"},
+        {name: "Electric Purple", hex: "#bf00ff"}, {name: "Sunset Orange", hex: "#fd5e53"},
+        {name: "Aqua Cyan", hex: "#00ffff"}, {name: "Plasma Red", hex: "#ff2a2a"},
+        {name: "Classic Blue", hex: "#0f4c81"}, {name: "Living Coral", hex: "#ff6f61"},
+        {name: "Ultra Violet", hex: "#5f4b8b"}, {name: "Greenery", hex: "#88b04b"},
+        {name: "Tiffany Blue", hex: "#0abab5"}, {name: "Ferrari Red", hex: "#ff2800"},
+        {name: "Klein Blue", hex: "#002fa7"}, {name: "Navy", hex: "#000080"},
+        {name: "Maroon", hex: "#800000"}, {name: "Gold", hex: "#ffd700"},
+        {name: "Lavender", hex: "#e6e6fa"}, {name: "Olive", hex: "#808000"},
+        {name: "Teal", hex: "#008080"}, {name: "Crimson", hex: "#dc143c"}
+    ];
+
+    let state = { target: null, analysis: null, lives: 5, attempts: 0, isGameOver: false, isRift: false };
+
+    function generateRiftColor() {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        const toHex = (c) => { const hex = c.toString(16); return hex.length == 1 ? "0" + hex : hex; };
+        const hex = "#" + toHex(r) + toHex(g) + toHex(b);
+        
+        const hsl = rgbToHsl(r, g, b);
+        let hueName = hsl.h < 15 || hsl.h >= 345 ? "红" : hsl.h < 45 ? "橙" : hsl.h < 75 ? "黄" : hsl.h < 160 ? "绿" : hsl.h < 200 ? "青" : hsl.h < 260 ? "蓝" : hsl.h < 300 ? "紫" : "品红";
+        let prefix = hsl.l > 0.8 ? "耀光" : hsl.l < 0.2 ? "深渊" : hsl.s > 0.9 ? "霓虹" : hsl.s < 0.1 ? "迷雾" : "次元";
+
+        return { name: `${prefix} · ${hueName}`, hex: hex, isRift: true };
+    }
+
+    function bindRadioClicks() {
+        const btns = document.querySelectorAll('.radio-btn');
+        btns.forEach(btn => {
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+        });
+        document.querySelectorAll('.radio-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const input = this.querySelector('input');
+                if(input) input.checked = true;
+            });
+        });
+    }
+
+    // V11 新增：严格的输入校验
+    function setupInputValidation() {
+        ['in-r', 'in-g', 'in-b'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', function(e) {
+                // 1. 移除任何非数字
+                let val = this.value.replace(/[^0-9]/g, '');
+                
+                // 2. 去除前导零 (除非是0)
+                if(val.length > 1 && val.startsWith('0')) val = val.substring(1);
+                
+                // 3. 强制范围 0-255
+                if(val !== '') {
+                    const num = parseInt(val);
+                    if(num > 255) val = '255';
+                }
+                
+                this.value = val;
+
+                // 自动跳转逻辑
+                if(val.length >= 3) {
+                    const next = id === 'in-r' ? 'in-g' : (id === 'in-g' ? 'in-b' : null);
+                    if(next) document.getElementById(next).focus();
+                }
+            });
+            
+            // 失去焦点时如果为空，填0（可选，这里保持为空让用户填）
+        });
+    }
+
+    function hexToRgb(hex) {
+        let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+    }
+
+    function rgbToHsl(r, g, b) {
+        r/=255; g/=255; b/=255;
+        let max=Math.max(r,g,b), min=Math.min(r,g,b);
+        let h, s, l = (max+min)/2;
+        if(max===min){ h=s=0; } else {
+            let d=max-min;
+            s = l>0.5 ? d/(2-max-min) : d/(max+min);
+            switch(max){
+                case r: h=(g-b)/d+(g<b?6:0); break;
+                case g: h=(b-r)/d+2; break;
+                case b: h=(r-g)/d+4; break;
+            }
+            h/=6;
+        }
+        return { h: h*360, s, l };
+    }
+
+    function analyzeTarget(hex) {
+        const rgb = hexToRgb(hex);
+        const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        const light = hsl.l >= 0.5 ? 'bright' : 'dark';
+        const sat = hsl.s >= 0.25 ? 'high' : 'low';
+        const h = hsl.h;
+        const anchors = [{n:'red',v:0},{n:'yellow',v:60},{n:'green',v:120},{n:'cyan',v:180},{n:'blue',v:240},{n:'magenta',v:300},{n:'red',v:360}];
+        anchors.sort((a, b) => Math.abs(a.v - h) - Math.abs(b.v - h));
+        const primary = anchors[0].n;
+        let secondary = 'none';
+        if (Math.abs(anchors[0].v - h) > 15) secondary = anchors[1].n !== primary ? anchors[1].n : anchors[2].n;
+        return { light, sat, primary, secondary, rgb, hsl };
+    }
+
+    function startNewGame() {
+        state.lives = 5;
+        // 清除恐怖效果
+        document.body.classList.remove('critical-error');
+        loadLevel();
+    }
+
+    function loadLevel() {
+        state.attempts = 0;
+        state.isGameOver = false;
+        const isRiftMode = Math.random() > 0.6;
+        state.target = isRiftMode ? generateRiftColor() : classicColors[Math.floor(Math.random() * classicColors.length)];
+        state.analysis = analyzeTarget(state.target.hex);
+
+        document.documentElement.style.setProperty('--target-glow', state.target.hex);
+
+        document.querySelectorAll('.phase-section').forEach(el => {
+            el.classList.remove('active');
+            el.style.opacity = ''; el.style.transform = ''; el.style.display = '';
+        });
+        document.getElementById('phase-1').classList.add('active');
+        document.getElementById('history-log').innerHTML = '';
+        document.getElementById('msg-box').textContent = '';
+        document.getElementById('msg-box').style.color = ''; // Reset color
+        
+        document.querySelectorAll('input[type=text], input[type=tel]').forEach(i => i.value = '');
+        document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+        
+        document.getElementById('submit-rgb-btn').disabled = false;
+        document.getElementById('submit-rgb-btn').textContent = "开始匹配";
+
+        const box = document.getElementById('color-box');
+        box.style.opacity = 0;
+        setTimeout(() => {
+            box.style.backgroundColor = state.target.hex;
+            box.style.opacity = 1;
+        }, 200);
+
+        const nameEl = document.getElementById('color-name');
+        nameEl.textContent = state.target.name;
+        if(state.target.isRift) nameEl.classList.add('rift'); else nameEl.classList.remove('rift');
+        
+        renderLives();
+        bindRadioClicks();
+    }
+
+    function renderLives() {
+        const container = document.getElementById('lives-display');
+        container.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            const heart = document.createElement('div');
+            heart.className = `heart ${i < state.lives ? 'active' : ''}`;
+            heart.innerHTML = '♥';
+            container.appendChild(heart);
+        }
+    }
+
+    function handleNextLevel() {
+        if (state.lives <= 0) startNewGame(); else loadLevel();
+    }
+
+    function submitPhase1() {
+        const getCheckedVal = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value;
+        const light = getCheckedVal('light');
+        const sat = getCheckedVal('sat');
+        const hue1 = getCheckedVal('hue1');
+        const hue2 = getCheckedVal('hue2');
+
+        if(!light) return shakeUI("请选择【明暗度】");
+        if(!sat) return shakeUI("请选择【饱和度】");
+        if(!hue1) return shakeUI("请选择【主色调】");
+        if(!hue2) return shakeUI("请选择【辅色调】");
+
+        let errs = [];
+        if(light !== state.analysis.light) errs.push("明暗度不符");
+        if(sat !== state.analysis.sat) errs.push("饱和度不符");
+        if(hue1 !== state.analysis.primary) errs.push("主色调判断错误");
+        if(hue2 !== state.analysis.secondary) errs.push("辅色调判断错误");
+
+        if(errs.length > 0) {
+            shakeUI(`分析有误：${errs[0]}`);
+        } else {
+            const p1 = document.getElementById('phase-1');
+            p1.style.opacity = 0; p1.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                p1.classList.remove('active');
+                const p2 = document.getElementById('phase-2');
+                p2.classList.add('active');
+                document.getElementById('msg-box').textContent = "✔ 光谱已锁定，请输入 RGB 数值";
+                document.getElementById('msg-box').style.color = 'var(--hue-green)';
+                setTimeout(() => document.getElementById('in-r').focus(), 300);
+            }, 300);
+        }
+    }
+
+    function submitGuess() {
+        if(state.isGameOver) return;
+        const rVal = document.getElementById('in-r').value;
+        const gVal = document.getElementById('in-g').value;
+        const bVal = document.getElementById('in-b').value;
+
+        // 严格空值校验
+        if(rVal === '' || gVal === '' || bVal === '') {
+            shakeUI("请补全 RGB 三个数值");
+            return;
+        }
+
+        const r = parseInt(rVal);
+        const g = parseInt(gVal);
+        const b = parseInt(bVal);
+
+        state.attempts++;
+        const targetRGB = state.analysis.rgb;
+        const diffPercent = (Math.abs(r-targetRGB.r) + Math.abs(g-targetRGB.g) + Math.abs(b-targetRGB.b)) / (255*3);
+        const isWin = diffPercent < 0.15;
+
+        addHistoryItem(r, g, b, targetRGB, isWin);
+
+        if(isWin) {
+            endGame(true);
+        } else {
+            state.lives--;
+            renderLives();
+            if(state.lives <= 0) endGame(false);
+            else {
+                document.getElementById('msg-box').textContent = "⚠ 偏差过大，请观察下方对比图";
+                document.getElementById('msg-box').style.color = 'var(--hue-red)';
+                document.getElementById('in-r').select();
+            }
+        }
+    }
+
+    function addHistoryItem(r, g, b, target, isWin) {
+        const list = document.getElementById('history-log');
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        const makeBar = (val, targetVal, color) => {
+            const valPct = Math.min(100, (val/255)*100);
+            const targetPct = Math.min(100, (targetVal/255)*100);
+            return `
+            <div style="display:flex; align-items:center; font-size:0.7rem; margin-bottom:4px;">
+                <span style="width:24px; font-weight:bold; color:${color}">${val}</span>
+                <div style="flex:1; margin-left:8px;">
+                    <div class="bar-track"><div class="bar-fill" style="width:${valPct}%; background:${color}; box-shadow:0 0 8px ${color}"></div><div class="bar-target-marker" style="left:${targetPct}%"></div></div>
+                </div>
+            </div>`;
+        };
+        item.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem; color:rgba(255,255,255,0.6)"><span>第 ${state.attempts} 次尝试</span><span>${isWin ? '<span style="color:var(--hue-green)">完美匹配</span>' : ''}</span></div>${makeBar(r, target.r, '#ff4d4f')}${makeBar(g, target.g, '#4ade80')}${makeBar(b, target.b, '#3b82f6')}`;
+        item.style.opacity = 0; item.style.transform = 'translateY(-10px)';
+        list.prepend(item);
+        setTimeout(() => { item.style.transition = 'all 0.3s ease'; item.style.opacity = 1; item.style.transform = 'translateY(0)'; }, 10);
+    }
+
+    function endGame(win) {
+        state.isGameOver = true;
+        document.getElementById('submit-rgb-btn').disabled = true;
+        const msg = document.getElementById('msg-box');
+        const btn = document.getElementById('next-btn');
+
+        if(win) {
+            msg.innerHTML = "🎉 校准成功！色彩感知力惊人！";
+            msg.style.color = 'var(--hue-green)';
+            fireConfetti();
+            btn.textContent = "⚡ 继续下一轮校准";
+            btn.className = "btn secondary";
+        } else {
+            // V11 恐怖模式触发
+            document.body.classList.add('critical-error');
+            msg.innerHTML = `<span class="glitch-text" data-text="系统严重故障">系统严重故障</span><br><span style="font-size:0.85em; color:#fff; font-weight:normal; opacity:0.8">正确代码: ${state.analysis.rgb.r} . ${state.analysis.rgb.g} . ${state.analysis.rgb.b}</span>`;
+            msg.style.color = 'var(--hue-red)';
+            btn.textContent = "💀 强制系统重启";
+            btn.className = "btn glitch-btn";
+            if(navigator.vibrate) navigator.vibrate([100,50,100,50,500]);
+        }
+        document.getElementById('phase-end').classList.add('active');
+    }
+
+    function shakeUI(text) {
+        const container = document.getElementById('game-container');
+        const msg = document.getElementById('msg-box');
+        msg.textContent = text;
+        msg.style.color = 'var(--hue-red)';
+        container.classList.remove('shake');
+        void container.offsetWidth;
+        container.classList.add('shake');
+        if(navigator.vibrate) navigator.vibrate(200);
+    }
+
+    function fireConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = [];
+        const colors = ['#ff4d4f', '#fadb14', '#4ade80', '#22d3ee', '#d946ef'];
+        for(let i=0; i<150; i++) particles.push({ x: canvas.width/2, y: canvas.height/2, vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15-5, life: 100+Math.random()*50, color: colors[Math.floor(Math.random()*colors.length)], size: Math.random()*5+2 });
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let active = false;
+            particles.forEach(p => {
+                if(p.life > 0) { active = true; p.life--; p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.vx *= 0.96; ctx.fillStyle = p.color; ctx.globalAlpha = Math.min(p.life/50, 1); ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); }
+            });
+            if(active) requestAnimationFrame(update); else ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        update();
+    }
+
+    // 初始化输入监听
+    setupInputValidation();
+    // 启动
+    startNewGame();
+</script>
+</body>
+</html>
