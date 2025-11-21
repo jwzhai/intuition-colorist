@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>色彩直觉训练 Pro (V11)</title>
+    <title>色彩直觉训练 Pro (V13)</title>
     <style>
         :root {
             --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.85);
+            --card-bg: rgba(30, 41, 59, 0.75); /* 降低不透明度，让背景透一点 */
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
             --accent: #6366f1;
@@ -23,13 +23,16 @@
             --hue-none: #94a3b8;
         }
 
+        * { box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
             background-color: var(--bg-color);
             background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            /* 关键修改：增加上下内边距，确保卡片上下不贴边 */
+            padding: 40px 0; 
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -40,99 +43,57 @@
             transition: background 0.5s;
         }
 
-        /* CRT 扫描线效果 (全局) */
+        /* CRT 扫描线 */
         body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            z-index: 998;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
+            z-index: 998; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* === 恐怖模式：系统崩溃 (Critical Error) === */
-        body.critical-error {
-            background-color: #1a0000; /* 警报红黑 */
-            animation: bg-pulse 0.1s infinite;
-        }
-        
-        body.critical-error .container {
-            border-color: #ff0000;
-            box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
-            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-        }
+        /* 恐怖模式 */
+        body.critical-error { background-color: #1a0000; animation: bg-pulse 0.1s infinite; }
+        body.critical-error .container { border-color: #ff0000; box-shadow: 0 0 60px 10px rgba(255, 0, 0, 0.6); animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; }
+        body.critical-error #color-box { filter: invert(1) grayscale(1); }
+        @keyframes glitch-skew { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
+        @keyframes bg-pulse { 0% { background-color: #1a0000; } 50% { background-color: #2b0000; } 100% { background-color: #1a0000; } }
+        .glitch-text { position: relative; color: #ff0000; font-weight: 900; letter-spacing: 2px; }
+        .glitch-text::before, .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1a0000; }
+        .glitch-text::before { left: 2px; text-shadow: -1px 0 #00ffea; clip-path: inset(0 0 0 0); animation: noise-anim-2 3s infinite linear alternate-reverse; }
+        .glitch-text::after { left: -2px; text-shadow: -1px 0 #ff005d; clip-path: inset(0 0 0 0); animation: noise-anim 2s infinite linear alternate-reverse; }
+        @keyframes noise-anim { 0% { clip-path: inset(10% 0 80% 0); } 20% { clip-path: inset(80% 0 1% 0); } 40% { clip-path: inset(40% 0 20% 0); } 60% { clip-path: inset(10% 0 60% 0); } 80% { clip-path: inset(30% 0 10% 0); } 100% { clip-path: inset(70% 0 30% 0); } }
 
-        body.critical-error #color-box {
-            filter: invert(1) grayscale(1); /* 颜色反转 */
-        }
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
 
-        /* 故障动画 */
-        @keyframes glitch-skew {
-            0% { transform: translate(0) }
-            20% { transform: translate(-2px, 2px) }
-            40% { transform: translate(-2px, -2px) }
-            60% { transform: translate(2px, 2px) }
-            80% { transform: translate(2px, -2px) }
-            100% { transform: translate(0) }
-        }
-        @keyframes bg-pulse {
-            0% { background-color: #1a0000; }
-            50% { background-color: #2b0000; }
-            100% { background-color: #1a0000; }
-        }
-
-        /* 故障文字层 */
-        .glitch-text {
-            position: relative;
-            color: #ff0000;
-            font-weight: 900;
-            letter-spacing: 2px;
-        }
-        .glitch-text::before, .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #1a0000;
-        }
-        .glitch-text::before {
-            left: 2px; text-shadow: -1px 0 #00ffea; clip-path: inset(0 0 0 0);
-            animation: noise-anim-2 3s infinite linear alternate-reverse;
-        }
-        .glitch-text::after {
-            left: -2px; text-shadow: -1px 0 #ff005d; clip-path: inset(0 0 0 0);
-            animation: noise-anim 2s infinite linear alternate-reverse;
-        }
-        @keyframes noise-anim {
-            0% { clip-path: inset(10% 0 80% 0); }
-            20% { clip-path: inset(80% 0 1% 0); }
-            40% { clip-path: inset(40% 0 20% 0); }
-            60% { clip-path: inset(10% 0 60% 0); }
-            80% { clip-path: inset(30% 0 10% 0); }
-            100% { clip-path: inset(70% 0 30% 0); }
-        }
-
-        /* === 标准样式 === */
-        #confetti-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 999;
-        }
-
+        /* === 核心优化：沉浸式卡片 === */
         .container {
-            width: 100%; max-width: 420px;
+            /* 宽度调整：使用百分比，并限制最大像素，确保在iPhone上两侧有明显空隙 */
+            width: 86%; 
+            max-width: 360px;
+            
             background: var(--card-bg);
-            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.1); border-radius: 24px;
-            padding: 24px; position: relative;
-            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5), 0 0 80px -40px var(--target-glow);
-            transition: box-shadow 0.5s ease;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            
+            /* 边框稍微调亮，增加轮廓感 */
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 24px 20px;
+            position: relative;
+            
+            /* 光晕重构：
+               第一层：深色投影，制造立体感
+               第二层：核心环境光，向外扩散 5px (正值)，模糊 50px
+               第三层：微弱的白色边缘光
+            */
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.7),
+                0 0 50px 5px var(--target-glow),
+                inset 0 0 0 1px rgba(255,255,255,0.05);
+            
+            transition: box-shadow 0.8s ease;
         }
 
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; font-size: 0.9rem; font-weight: 700; color: var(--text-sub);
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.9rem; font-weight: 700; color: var(--text-sub); }
         .header span em { color: var(--accent); font-style: normal; }
         
         .hearts { display: flex; gap: 4px; }
@@ -140,51 +101,40 @@
         .heart.active { opacity: 1; color: #ef4444; transform: scale(1.1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6)); }
 
         #color-box {
-            width: 100%; height: 160px; border-radius: 18px; margin-bottom: 16px; position: relative;
+            width: 100%; height: 150px; 
+            border-radius: 18px; margin-bottom: 16px; position: relative;
             box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
             transition: opacity 0.3s ease, background-color 0.5s ease;
         }
-        #color-box::after {
-            content: ''; position: absolute; inset: 0; border-radius: 18px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none;
-        }
+        #color-box::after { content: ''; position: absolute; inset: 0; border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
 
         .color-name {
             text-align: center; font-weight: 800; font-size: 1.4rem; margin-bottom: 24px;
             background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             min-height: 1.4em;
         }
-        .color-name.rift {
-            background: linear-gradient(to right, #c084fc, #6366f1); -webkit-background-clip: text;
-            text-shadow: 0 0 15px rgba(192, 132, 252, 0.3);
-        }
+        .color-name.rift { background: linear-gradient(to right, #c084fc, #6366f1); -webkit-background-clip: text; text-shadow: 0 0 15px rgba(192, 132, 252, 0.3); }
 
         .phase-section { display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .phase-section.active { display: block; opacity: 1; transform: translateY(0); }
 
-        .section-label {
-            font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px; font-weight: 700;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .section-label::before {
-            content: ''; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 8px var(--accent);
-        }
+        .section-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .section-label::before { content: ''; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 8px var(--accent); }
 
         .control-group { margin-bottom: 20px; }
-        .radio-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 8px; }
+        .radio-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); gap: 6px; }
         
         .radio-btn { position: relative; display: block; cursor: pointer; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
         .radio-btn input { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; margin: 0; cursor: pointer; z-index: 10; }
         .radio-btn span {
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            height: 42px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px; font-size: 0.85rem; font-weight: 600; color: var(--text-sub);
+            height: 40px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-sub);
             transition: all 0.2s; position: relative; z-index: 1; pointer-events: none;
         }
         .radio-btn:active span { transform: scale(0.95); }
         .radio-btn input:checked + span { background: rgba(255,255,255,0.2); border-color: #fff; color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.3); font-weight: 800; }
 
-        /* Button Colors */
         .radio-btn input[value="red"]:checked + span { background: var(--hue-red); border-color: var(--hue-red); box-shadow: 0 0 15px rgba(255, 77, 79, 0.6); }
         .radio-btn input[value="yellow"]:checked + span { background: var(--hue-yellow); border-color: var(--hue-yellow); color: #1a1a1a; box-shadow: 0 0 15px rgba(250, 219, 20, 0.6); }
         .radio-btn input[value="green"]:checked + span { background: var(--hue-green); border-color: var(--hue-green); color: #064e3b; box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
@@ -193,14 +143,13 @@
         .radio-btn input[value="magenta"]:checked + span { background: var(--hue-magenta); border-color: var(--hue-magenta); color: #fff; box-shadow: 0 0 15px rgba(217, 70, 239, 0.6); }
         .radio-btn input[value="none"]:checked + span { background: rgba(148, 163, 184, 0.3); border-color: #cbd5e1; color: #e2e8f0; box-shadow: 0 0 10px rgba(148, 163, 184, 0.4); }
 
-        /* RGB Inputs */
-        .input-row { display: flex; gap: 16px; margin: 30px 0; justify-content: center; }
+        .input-row { display: flex; gap: 12px; margin: 30px 0; justify-content: center; }
         .rgb-input-group { display: flex; flex-direction: column; align-items: center; width: 30%; }
         .rgb-input-group label { font-size: 0.75rem; margin-bottom: 8px; font-weight: 800; letter-spacing: 1px; }
         .rgb-input {
-            width: 100%; height: 56px; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 16px; text-align: center; font-family: 'Courier New', Courier, monospace;
-            font-size: 1.4rem; font-weight: bold; color: #fff; transition: all 0.3s; padding: 0;
+            width: 100%; height: 52px; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px; text-align: center; font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3rem; font-weight: bold; color: #fff; transition: all 0.3s; padding: 0;
             -moz-appearance: textfield;
         }
         .rgb-input:focus { outline: none; transform: translateY(-2px); background: rgba(0,0,0,0.6); }
@@ -215,15 +164,10 @@
         }
         .btn:active { transform: scale(0.97); }
         .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-sub); box-shadow: none; margin-top: 20px; }
-        /* 恐怖按钮 */
-        .btn.glitch-btn {
-            background: #000; border: 1px solid #ff0000; color: #ff0000;
-            box-shadow: 0 0 10px #ff0000;
-            animation: pulse-red 0.5s infinite alternate;
-        }
+        .btn.glitch-btn { background: #000; border: 1px solid #ff0000; color: #ff0000; box-shadow: 0 0 10px #ff0000; animation: pulse-red 0.5s infinite alternate; }
         @keyframes pulse-red { from { box-shadow: 0 0 5px #ff0000; } to { box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; } }
 
-        .history-list { margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; max-height: 240px; overflow-y: auto; }
+        .history-list { margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; max-height: 200px; overflow-y: auto; }
         .history-item { background: rgba(0,0,0,0.25); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
         .bar-track { background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; position: relative; margin: 8px 0; }
         .bar-fill { height: 100%; border-radius: 3px; box-shadow: 0 0 8px currentColor; transition: width 0.6s ease; }
@@ -344,55 +288,30 @@
         const b = Math.floor(Math.random() * 256);
         const toHex = (c) => { const hex = c.toString(16); return hex.length == 1 ? "0" + hex : hex; };
         const hex = "#" + toHex(r) + toHex(g) + toHex(b);
-        
         const hsl = rgbToHsl(r, g, b);
         let hueName = hsl.h < 15 || hsl.h >= 345 ? "红" : hsl.h < 45 ? "橙" : hsl.h < 75 ? "黄" : hsl.h < 160 ? "绿" : hsl.h < 200 ? "青" : hsl.h < 260 ? "蓝" : hsl.h < 300 ? "紫" : "品红";
         let prefix = hsl.l > 0.8 ? "耀光" : hsl.l < 0.2 ? "深渊" : hsl.s > 0.9 ? "霓虹" : hsl.s < 0.1 ? "迷雾" : "次元";
-
         return { name: `${prefix} · ${hueName}`, hex: hex, isRift: true };
     }
 
     function bindRadioClicks() {
         const btns = document.querySelectorAll('.radio-btn');
-        btns.forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-        });
+        btns.forEach(btn => { const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn); });
         document.querySelectorAll('.radio-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const input = this.querySelector('input');
-                if(input) input.checked = true;
-            });
+            btn.addEventListener('click', function(e) { const input = this.querySelector('input'); if(input) input.checked = true; });
         });
     }
 
-    // V11 新增：严格的输入校验
     function setupInputValidation() {
         ['in-r', 'in-g', 'in-b'].forEach(id => {
             const el = document.getElementById(id);
             el.addEventListener('input', function(e) {
-                // 1. 移除任何非数字
                 let val = this.value.replace(/[^0-9]/g, '');
-                
-                // 2. 去除前导零 (除非是0)
                 if(val.length > 1 && val.startsWith('0')) val = val.substring(1);
-                
-                // 3. 强制范围 0-255
-                if(val !== '') {
-                    const num = parseInt(val);
-                    if(num > 255) val = '255';
-                }
-                
+                if(val !== '') { const num = parseInt(val); if(num > 255) val = '255'; }
                 this.value = val;
-
-                // 自动跳转逻辑
-                if(val.length >= 3) {
-                    const next = id === 'in-r' ? 'in-g' : (id === 'in-g' ? 'in-b' : null);
-                    if(next) document.getElementById(next).focus();
-                }
+                if(val.length >= 3) { const next = id === 'in-r' ? 'in-g' : (id === 'in-g' ? 'in-b' : null); if(next) document.getElementById(next).focus(); }
             });
-            
-            // 失去焦点时如果为空，填0（可选，这里保持为空让用户填）
         });
     }
 
@@ -434,7 +353,6 @@
 
     function startNewGame() {
         state.lives = 5;
-        // 清除恐怖效果
         document.body.classList.remove('critical-error');
         loadLevel();
     }
@@ -455,7 +373,7 @@
         document.getElementById('phase-1').classList.add('active');
         document.getElementById('history-log').innerHTML = '';
         document.getElementById('msg-box').textContent = '';
-        document.getElementById('msg-box').style.color = ''; // Reset color
+        document.getElementById('msg-box').style.color = ''; 
         
         document.querySelectorAll('input[type=text], input[type=tel]').forEach(i => i.value = '');
         document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
@@ -533,7 +451,6 @@
         const gVal = document.getElementById('in-g').value;
         const bVal = document.getElementById('in-b').value;
 
-        // 严格空值校验
         if(rVal === '' || gVal === '' || bVal === '') {
             shakeUI("请补全 RGB 三个数值");
             return;
@@ -598,7 +515,6 @@
             btn.textContent = "⚡ 继续下一轮校准";
             btn.className = "btn secondary";
         } else {
-            // V11 恐怖模式触发
             document.body.classList.add('critical-error');
             msg.innerHTML = `<span class="glitch-text" data-text="系统严重故障">系统严重故障</span><br><span style="font-size:0.85em; color:#fff; font-weight:normal; opacity:0.8">正确代码: ${state.analysis.rgb.r} . ${state.analysis.rgb.g} . ${state.analysis.rgb.b}</span>`;
             msg.style.color = 'var(--hue-red)';
@@ -638,9 +554,7 @@
         update();
     }
 
-    // 初始化输入监听
     setupInputValidation();
-    // 启动
     startNewGame();
 </script>
 </body>
