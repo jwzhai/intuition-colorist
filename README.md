@@ -1,2 +1,82 @@
-# intuition-colorist
-Intuition Colorist is a cyberpunk-themed mobile web game designed to train your color sensitivity. Players analyze random colors via qualitative dimensions before intuitively guessing exact RGB values. Features include haptic feedback, visual deviation analytics, persistent survival mechanics, and a "System Crash" horror effect upon failure.
+# 🎨 Intuition Colorist
+
+> **Crack the RGB Code.**  
+> A hardcore, cyberpunk-themed color intuition training game for the mobile web.
+
+![Project Status](https://img.shields.io/badge/Status-Completed-success)
+![Tech Stack](https://img.shields.io/badge/Stack-HTML%20%7C%20CSS%20%7C%20VanillaJS-blue)
+![Style](https://img.shields.io/badge/Style-Cyberpunk%20%2F%20Glassmorphism-purple)
+
+## 📖 简介 (Introduction)
+
+**Intuition Colorist** 是一个旨在训练设计师和开发者对 RGB 数值敏感度的单页 Web 游戏。
+
+它摒弃了传统的“选色块”玩法，要求玩家像计算机一样思考：首先对颜色进行定性分析（HSV模型），然后依靠直觉输入精确的 RGB 数值。配合赛博朋克风格的视觉反馈和“硬核”的生存机制，让枯燥的色彩训练变成一场紧张的系统校准任务。
+
+> Intuition Colorist is a cyberpunk-themed mobile web game designed to train your color sensitivity. Players analyze random colors via qualitative dimensions before intuitively guessing exact RGB values. Features include haptic feedback, visual deviation analytics, persistent survival mechanics, and a "System Crash" horror effect upon failure.
+
+
+## ✨ 功能特性 (Features)
+
+### 核心玩法
+- **双阶段分析机制**：
+  - **Phase 1 (定性)**：强制玩家先判断明暗、饱和度、主色调及辅色调（支持纯色判断），构建色彩心理模型。
+  - **Phase 2 (定量)**：解锁数字键盘，输入 0-255 的 RGB 精确数值。
+- **双模式色彩库**：
+  - **经典模式**：内置 Pantone 流行色及 Web 安全色库。
+  - **次元裂缝 (Dimension Rift)**：40% 概率触发，全随机生成颜色，并根据 HSL 算法自动赋予科幻名称（如“虚空·深红”、“霓虹·青”）。
+
+### 游戏机制
+- **可视化反馈**：提交后通过发光条形图直观展示猜测值与目标值的偏差（Gap）。
+- **持久化生存**：生命值（红心）在关卡切换时不会重置，只有连续胜利才能生存下去。
+- **输入钳位**：智能拦截非法字符，自动修正超出范围的数值，提供流畅的移动端输入体验。
+
+## 🎨 视觉与交互设计 (Visual & UX)
+
+本项目采用 **Cyberpunk / Sci-Fi UI** 设计语言：
+
+*   **玻璃拟态 (Glassmorphism)**：半透明磨砂卡片悬浮于动态深空背景之上。
+*   **动态环境光**：UI 背景光晕会随当前目标颜色实时呼吸变化。
+*   **霓虹反馈系统**：
+    *   按钮选中时会爆发对应色相的霓虹光辉（如选中“红”则按钮发红光）。
+    *   输入框模拟旧式数码管风格，聚焦时伴随 RGB 对应色的呼吸灯效。
+*   **系统崩溃 (Glitch Horror)**：
+    *   当生命耗尽时，触发全屏 CRT 故障、色散撕裂及红屏警告，模拟系统被入侵或崩溃的恐怖氛围。
+    *   伴随设备物理震动（Haptic Feedback）。
+*   **胜利粒子**：挑战成功时触发全屏 Confetti 粒子爆炸庆典。
+
+## 🛠️ 开发信息 (Development)
+
+本项目为**单文件架构 (Single-File Component)**，无需构建工具，开箱即用。
+
+### 技术栈
+*   **HTML5**: 语义化标签结构。
+*   **CSS3**: 使用 CSS Variables 管理主题，大量使用 `backdrop-filter`、`box-shadow` 及 `@keyframes` 动画。
+*   **JavaScript (ES6+)**: 
+    *   原生 DOM 操作（无 jQuery/Vue/React）。
+    *   Canvas API 实现粒子特效。
+    *   Haptics API 实现震动反馈。
+
+### 本地运行
+1. 克隆仓库或下载源代码。
+2. 确保文件名为 `index.html`。
+3. 直接使用浏览器打开，或使用 Live Server 启动。
+4. **推荐环境**：Chrome/Safari 移动端模式（已针对 `viewport-fit=cover` 和触摸事件优化）。
+
+## 🚀 部署 (Deployment)
+
+由于项目是纯静态文件，可免费部署至任意静态托管平台。
+
+### 方案 A: Netlify / Vercel (推荐)
+1. 将项目文件夹拖入 Netlify 控制台，或关联 GitHub 仓库至 Vercel。
+2. 即刻获得 HTTPS 公网链接。
+
+### 方案 B: GitHub Pages
+1. 将代码推送到 GitHub 仓库。
+2. 在 Settings -> Pages 中选择主分支并保存。
+
+## 🤝 贡献 (Contributing)
+欢迎提交 PR 扩充经典色库，或优化“次元裂缝”的命名算法！
+
+---
+*Designed with intuitive precision.*
