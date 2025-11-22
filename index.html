@@ -3,24 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>色彩直觉训练 Pro (V13)</title>
+    <title>色彩直觉训练 Pro (V17)</title>
     <style>
         :root {
             --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.75); /* 降低不透明度，让背景透一点 */
+            --card-bg: rgba(30, 41, 59, 0.75);
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
             --accent: #6366f1;
             --target-glow: rgba(255,255,255,0.1);
             
-            /* 霓虹色板 */
-            --hue-red: #ff4d4f;
-            --hue-yellow: #fadb14;
-            --hue-green: #4ade80;
-            --hue-cyan: #22d3ee;
-            --hue-blue: #3b82f6;
-            --hue-magenta: #d946ef;
-            --hue-none: #94a3b8;
+            --hue-red: #ff4d4f; --hue-yellow: #fadb14; --hue-green: #4ade80;
+            --hue-cyan: #22d3ee; --hue-blue: #3b82f6; --hue-magenta: #d946ef;
         }
 
         * { box-sizing: border-box; }
@@ -31,8 +25,7 @@
             background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
             color: var(--text-main);
             margin: 0;
-            /* 关键修改：增加上下内边距，确保卡片上下不贴边 */
-            padding: 40px 0; 
+            padding: 20px 0; 
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -43,139 +36,226 @@
             transition: background 0.5s;
         }
 
-        /* CRT 扫描线 */
         body::before {
             content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
             z-index: 998; background-size: 100% 2px, 3px 100%; pointer-events: none;
         }
 
-        /* 恐怖模式 */
         body.critical-error { background-color: #1a0000; animation: bg-pulse 0.1s infinite; }
         body.critical-error .container { border-color: #ff0000; box-shadow: 0 0 60px 10px rgba(255, 0, 0, 0.6); animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; }
         body.critical-error #color-box { filter: invert(1) grayscale(1); }
         @keyframes glitch-skew { 0% { transform: translate(0) } 20% { transform: translate(-2px, 2px) } 40% { transform: translate(-2px, -2px) } 60% { transform: translate(2px, 2px) } 80% { transform: translate(2px, -2px) } 100% { transform: translate(0) } }
         @keyframes bg-pulse { 0% { background-color: #1a0000; } 50% { background-color: #2b0000; } 100% { background-color: #1a0000; } }
-        .glitch-text { position: relative; color: #ff0000; font-weight: 900; letter-spacing: 2px; }
-        .glitch-text::before, .glitch-text::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1a0000; }
-        .glitch-text::before { left: 2px; text-shadow: -1px 0 #00ffea; clip-path: inset(0 0 0 0); animation: noise-anim-2 3s infinite linear alternate-reverse; }
-        .glitch-text::after { left: -2px; text-shadow: -1px 0 #ff005d; clip-path: inset(0 0 0 0); animation: noise-anim 2s infinite linear alternate-reverse; }
-        @keyframes noise-anim { 0% { clip-path: inset(10% 0 80% 0); } 20% { clip-path: inset(80% 0 1% 0); } 40% { clip-path: inset(40% 0 20% 0); } 60% { clip-path: inset(10% 0 60% 0); } 80% { clip-path: inset(30% 0 10% 0); } 100% { clip-path: inset(70% 0 30% 0); } }
 
         #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
 
-        /* === 核心优化：沉浸式卡片 === */
         .container {
-            /* 宽度调整：使用百分比，并限制最大像素，确保在iPhone上两侧有明显空隙 */
-            width: 86%; 
-            max-width: 360px;
-            
+            width: 90%; 
+            max-width: 380px;
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            
-            /* 边框稍微调亮，增加轮廓感 */
             border: 1px solid rgba(255,255,255,0.15);
             border-radius: 24px;
             padding: 24px 20px;
             position: relative;
-            
-            /* 光晕重构：
-               第一层：深色投影，制造立体感
-               第二层：核心环境光，向外扩散 5px (正值)，模糊 50px
-               第三层：微弱的白色边缘光
-            */
-            box-shadow: 
-                0 20px 50px rgba(0,0,0,0.7),
-                0 0 50px 5px var(--target-glow),
-                inset 0 0 0 1px rgba(255,255,255,0.05);
-            
-            transition: box-shadow 0.8s ease;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 50px 5px var(--target-glow);
+            transition: all 0.5s ease;
         }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 0.9rem; font-weight: 700; color: var(--text-sub); }
-        .header span em { color: var(--accent); font-style: normal; }
+        /* === 键盘激活时的容器微调 === */
+        .container.keyboard-active {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        /* === 修复 Header 布局 Bug === */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            font-size: 0.9rem; 
+            font-weight: 700; 
+            color: var(--text-sub); 
+            height: 40px; /* 固定高度防止抖动 */
+        }
         
-        .hearts { display: flex; gap: 4px; }
-        .heart { opacity: 0.2; transition: all 0.3s; transform: scale(0.9); font-size: 1.2rem; color: #64748b; }
+        .header-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+        .header-title em { color: var(--accent); font-style: normal; }
+
+        .header-controls { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            flex-shrink: 0; /* 关键：防止右侧控件被压缩 */
+            margin-left: auto;
+        }
+        
+        .hearts { 
+            display: flex; 
+            gap: 4px; 
+            margin-right: 8px; 
+            flex-wrap: nowrap; /* 关键：强制不换行 */
+            min-width: max-content; /* 关键：宽度自适应内容 */
+        }
+        .heart { opacity: 0.2; transition: all 0.3s; transform: scale(0.9); font-size: 1.2rem; color: #64748b; line-height: 1; }
         .heart.active { opacity: 1; color: #ef4444; transform: scale(1.1); filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6)); }
 
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.3); border-radius: 8px; padding: 4px 10px;
+            margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        .status-item { display: flex; align-items: center; gap: 6px; }
+        .status-label { color: var(--text-sub); opacity: 0.8; }
+        .status-value { color: var(--hue-cyan); font-weight: bold; }
+        .status-value.streak { color: var(--hue-yellow); text-shadow: 0 0 5px rgba(250, 219, 20, 0.4); }
+        .status-value.danger { color: var(--hue-red); animation: pulse-text 1s infinite; }
+
+        /* === 核心：沉浸式色块 === */
         #color-box {
-            width: 100%; height: 150px; 
-            border-radius: 18px; margin-bottom: 16px; position: relative;
+            width: 100%; 
+            height: 150px; /* 默认保持大色块 */
+            border-radius: 18px; 
+            margin-bottom: 16px; 
+            position: relative;
             box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-            transition: opacity 0.3s ease, background-color 0.5s ease;
+            transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), margin 0.3s;
+            will-change: height;
         }
         #color-box::after { content: ''; position: absolute; inset: 0; border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events: none; }
+        
+        /* 仅在键盘弹起（focus）时收缩色块 */
+        .container.keyboard-active #color-box {
+            height: 60px;
+            margin-bottom: 10px;
+        }
 
         .color-name {
             text-align: center; font-weight: 800; font-size: 1.4rem; margin-bottom: 24px;
             background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             min-height: 1.4em;
+            transition: all 0.3s;
         }
-        .color-name.rift { background: linear-gradient(to right, #c084fc, #6366f1); -webkit-background-clip: text; text-shadow: 0 0 15px rgba(192, 132, 252, 0.3); }
+        .color-name.rift { background: linear-gradient(to right, #c084fc, #6366f1); -webkit-background-clip: text; }
+        
+        /* 键盘弹起时稍微缩小字体 */
+        .container.keyboard-active .color-name {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
 
         .phase-section { display: none; opacity: 0; transform: translateY(10px); transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .phase-section.active { display: block; opacity: 1; transform: translateY(0); }
 
+        /* === HUD 优化：保持横排 1x4 === */
+        .spectrum-hud {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 保持横排，节省纵向空间 */
+            gap: 4px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px dashed rgba(255,255,255,0.1);
+            transition: margin 0.3s;
+        }
+        
+        .container.keyboard-active .spectrum-hud { margin-bottom: 12px; }
+
+        .hud-item {
+            display: flex; flex-direction: column; gap: 2px;
+            font-size: 0.7rem; color: var(--text-sub); align-items: center;
+        }
+        .hud-tag {
+            font-weight: 700; font-size: 0.8rem; letter-spacing: 0.5px; white-space: nowrap;
+        }
+        /* 小屏幕下自动隐藏 Hint 防止换行，大屏显示 */
+        .hud-hint {
+            font-family: 'Courier New', monospace; opacity: 0.6; font-size: 0.6rem; transform: scale(0.9);
+            display: none;
+        }
+        @media (min-width: 360px) {
+            .hud-hint { display: block; }
+        }
+
+        .tag-red { color: var(--hue-red); } .tag-yellow { color: var(--hue-yellow); } .tag-green { color: var(--hue-green); }
+        .tag-cyan { color: var(--hue-cyan); } .tag-blue { color: var(--hue-blue); } .tag-magenta { color: var(--hue-magenta); }
+        .tag-bright { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); } .tag-dark { color: #64748b; }
+
         .section-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
         .section-label::before { content: ''; width: 4px; height: 14px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 8px var(--accent); }
 
-        .control-group { margin-bottom: 20px; }
-        .radio-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(48px, 1fr)); gap: 6px; }
+        .control-group { margin-bottom: 16px; }
+        .radio-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(42px, 1fr)); gap: 5px; }
         
-        .radio-btn { position: relative; display: block; cursor: pointer; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-        .radio-btn input { position: absolute; opacity: 0; width: 100%; height: 100%; top: 0; left: 0; margin: 0; cursor: pointer; z-index: 10; }
         .radio-btn span {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
             height: 40px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-sub);
-            transition: all 0.2s; position: relative; z-index: 1; pointer-events: none;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .radio-btn:active span { transform: scale(0.95); }
         .radio-btn input:checked + span { background: rgba(255,255,255,0.2); border-color: #fff; color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.3); font-weight: 800; }
+        
+        .radio-btn input[value="red"]:checked + span { background: var(--hue-red); border-color: var(--hue-red); }
+        .radio-btn input[value="yellow"]:checked + span { background: var(--hue-yellow); border-color: var(--hue-yellow); color: #1a1a1a; }
+        .radio-btn input[value="green"]:checked + span { background: var(--hue-green); border-color: var(--hue-green); color: #064e3b; }
+        .radio-btn input[value="cyan"]:checked + span { background: var(--hue-cyan); border-color: var(--hue-cyan); color: #083344; }
+        .radio-btn input[value="blue"]:checked + span { background: var(--hue-blue); border-color: var(--hue-blue); color: #fff; }
+        .radio-btn input[value="magenta"]:checked + span { background: var(--hue-magenta); border-color: var(--hue-magenta); color: #fff; }
+        .radio-btn input[value="none"]:checked + span { background: rgba(148, 163, 184, 0.3); border-color: #cbd5e1; }
+        .radio-btn { position: relative; } 
+        .radio-btn input { position: absolute; opacity: 0; inset: 0; z-index: 10; cursor: pointer; }
 
-        .radio-btn input[value="red"]:checked + span { background: var(--hue-red); border-color: var(--hue-red); box-shadow: 0 0 15px rgba(255, 77, 79, 0.6); }
-        .radio-btn input[value="yellow"]:checked + span { background: var(--hue-yellow); border-color: var(--hue-yellow); color: #1a1a1a; box-shadow: 0 0 15px rgba(250, 219, 20, 0.6); }
-        .radio-btn input[value="green"]:checked + span { background: var(--hue-green); border-color: var(--hue-green); color: #064e3b; box-shadow: 0 0 15px rgba(74, 222, 128, 0.6); }
-        .radio-btn input[value="cyan"]:checked + span { background: var(--hue-cyan); border-color: var(--hue-cyan); color: #083344; box-shadow: 0 0 15px rgba(34, 211, 238, 0.6); }
-        .radio-btn input[value="blue"]:checked + span { background: var(--hue-blue); border-color: var(--hue-blue); color: #fff; box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
-        .radio-btn input[value="magenta"]:checked + span { background: var(--hue-magenta); border-color: var(--hue-magenta); color: #fff; box-shadow: 0 0 15px rgba(217, 70, 239, 0.6); }
-        .radio-btn input[value="none"]:checked + span { background: rgba(148, 163, 184, 0.3); border-color: #cbd5e1; color: #e2e8f0; box-shadow: 0 0 10px rgba(148, 163, 184, 0.4); }
+        .input-row { display: flex; gap: 10px; margin: 20px 0 10px 0; justify-content: center; transition: all 0.3s; }
+        .container.keyboard-active .input-row { margin: 10px 0; }
 
-        .input-row { display: flex; gap: 12px; margin: 30px 0; justify-content: center; }
         .rgb-input-group { display: flex; flex-direction: column; align-items: center; width: 30%; }
-        .rgb-input-group label { font-size: 0.75rem; margin-bottom: 8px; font-weight: 800; letter-spacing: 1px; }
+        .rgb-input-group label { font-size: 0.75rem; margin-bottom: 6px; font-weight: 800; letter-spacing: 1px; }
         .rgb-input {
-            width: 100%; height: 52px; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 14px; text-align: center; font-family: 'Courier New', Courier, monospace;
-            font-size: 1.3rem; font-weight: bold; color: #fff; transition: all 0.3s; padding: 0;
-            -moz-appearance: textfield;
+            width: 100%; height: 50px; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px; text-align: center; font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3rem; font-weight: bold; color: #fff; padding: 0; -moz-appearance: textfield;
         }
-        .rgb-input:focus { outline: none; transform: translateY(-2px); background: rgba(0,0,0,0.6); }
-        .rgb-input.r:focus { border-color: var(--hue-red); box-shadow: 0 0 15px rgba(255, 77, 79, 0.4); }
-        .rgb-input.g:focus { border-color: var(--hue-green); box-shadow: 0 0 15px rgba(74, 222, 128, 0.4); }
-        .rgb-input.b:focus { border-color: var(--hue-blue); box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+        .rgb-input:focus { outline: none; background: rgba(0,0,0,0.6); }
+        .rgb-input.r:focus { border-color: var(--hue-red); }
+        .rgb-input.g:focus { border-color: var(--hue-green); }
+        .rgb-input.b:focus { border-color: var(--hue-blue); }
 
         .btn {
-            width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 700; font-size: 1rem;
+            width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: 700; font-size: 1rem;
             cursor: pointer; margin-top: 12px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: #fff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); transition: all 0.2s; letter-spacing: 1px;
+            color: #fff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
         }
-        .btn:active { transform: scale(0.97); }
-        .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-sub); box-shadow: none; margin-top: 20px; }
-        .btn.glitch-btn { background: #000; border: 1px solid #ff0000; color: #ff0000; box-shadow: 0 0 10px #ff0000; animation: pulse-red 0.5s infinite alternate; }
-        @keyframes pulse-red { from { box-shadow: 0 0 5px #ff0000; } to { box-shadow: 0 0 20px #ff0000, inset 0 0 10px #ff0000; } }
+        .btn.secondary { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-sub); box-shadow: none; margin-top: 16px; }
+        .btn.glitch-btn { background: #000; border: 1px solid #ff0000; color: #ff0000; box-shadow: 0 0 10px #ff0000; }
 
-        .history-list { margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; max-height: 200px; overflow-y: auto; }
-        .history-item { background: rgba(0,0,0,0.25); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .bar-track { background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; position: relative; margin: 8px 0; }
-        .bar-fill { height: 100%; border-radius: 3px; box-shadow: 0 0 8px currentColor; transition: width 0.6s ease; }
-        .bar-target-marker { background: #fff; width: 2px; height: 12px; top: -3px; position: absolute; box-shadow: 0 0 4px rgba(255,255,255,0.8); z-index: 2; }
+        .history-list { margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; max-height: 150px; overflow-y: auto; }
+        .history-item { background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.05); }
+        .bar-track { background: rgba(255,255,255,0.05); height: 5px; border-radius: 3px; position: relative; margin: 6px 0; }
+        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+        .bar-target-marker { background: #fff; width: 2px; height: 10px; top: -2.5px; position: absolute; z-index: 2; box-shadow: 0 0 4px white; }
 
-        #msg-box { text-align: center; font-weight: 700; margin: 12px 0; min-height: 1.5em; font-size: 0.95rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6); line-height: 1.4; }
+        #msg-box { text-align: center; font-weight: 700; margin: 8px 0; min-height: 1.4em; font-size: 0.9rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
         .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        .btn-icon {
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1); color: var(--text-sub);
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; font-size: 0.9rem;
+        }
+        .btn-icon.on { border-color: var(--hue-green); color: var(--hue-green); }
+        .btn-icon.switch.on { animation: icon-pulse 2s infinite; }
+        @keyframes icon-pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -184,8 +264,24 @@
 
 <div class="container" id="game-container">
     <div class="header">
-        <span>色彩直觉 <em>Pro</em></span>
-        <div class="hearts" id="lives-display"></div>
+        <span class="header-title">色彩直觉 <em>Pro</em></span>
+        <div class="header-controls">
+            <div class="hearts" id="lives-display"></div>
+            <div class="btn-icon" id="sound-btn" onclick="audioCtrl.toggle()">🔇</div>
+            <div class="btn-icon switch" id="track-btn" onclick="audioCtrl.changeTrack()">🔁</div>
+        </div>
+    </div>
+
+    <!-- 状态诊断条 -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-label">SYNC:</span>
+            <span class="status-value" id="tolerance-display">15%</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">STREAK:</span>
+            <span class="status-value streak" id="streak-display">0</span>
+        </div>
     </div>
 
     <div id="color-box"></div>
@@ -240,22 +336,24 @@
 
     <!-- Phase 2 -->
     <div id="phase-2" class="phase-section">
-        <div class="section-label" style="justify-content:center; border:none; opacity:0.8">请输入 RGB 数值 (0-255)</div>
+        <!-- HUD 面板 (保持横排) -->
+        <div id="spectrum-hud" class="spectrum-hud"></div>
+
         <div class="input-row">
             <div class="rgb-input-group">
                 <label style="color:var(--hue-red)">RED</label>
-                <input type="tel" id="in-r" class="rgb-input r" maxlength="3" placeholder="0">
+                <input type="tel" id="in-r" class="rgb-input r" maxlength="3" placeholder="R">
             </div>
             <div class="rgb-input-group">
                 <label style="color:var(--hue-green)">GREEN</label>
-                <input type="tel" id="in-g" class="rgb-input g" maxlength="3" placeholder="0">
+                <input type="tel" id="in-g" class="rgb-input g" maxlength="3" placeholder="G">
             </div>
             <div class="rgb-input-group">
                 <label style="color:var(--hue-blue)">BLUE</label>
-                <input type="tel" id="in-b" class="rgb-input b" maxlength="3" placeholder="0">
+                <input type="tel" id="in-b" class="rgb-input b" maxlength="3" placeholder="B">
             </div>
         </div>
-        <button class="btn" id="submit-rgb-btn" onclick="submitGuess()">开始匹配</button>
+        <button class="btn" id="submit-rgb-btn" onclick="submitGuess()">锁定匹配</button>
         <div id="history-log" class="history-list"></div>
     </div>
 
@@ -266,6 +364,86 @@
 </div>
 
 <script>
+    const gameConfig = { enableDynamicDifficulty: true, baseTolerance: 0.15, minTolerance: 0.05, maxTolerance: 0.20, difficultyStep: 0.005, staticDifficulty: 'NORMAL' };
+
+    const audioCtrl = {
+        ctx: null, isOn: false, bgmInterval: null, currentTrackIndex: 0, noteIndex: 0,
+        tracks: [
+            { name: "Neon Pulse", tempo: 128, notes: [146.83, 146.83, 174.61, 146.83, 220.00, 196.00, 174.61, 130.81], probOctave: 0.15, probSkip: 0.1, filterBase: 600 },
+            { name: "Deep Dive", tempo: 90, notes: [98.00, 116.54, 87.31, 98.00, 130.81, 87.31], probOctave: 0.05, probSkip: 0.05, filterBase: 400 },
+            { name: "Data Rush", tempo: 145, notes: [146.83, 174.61, 220.00, 196.00, 261.63, 220.00, 174.61, 196.00], probOctave: 0.25, probSkip: 0.0, filterBase: 800 }
+        ],
+        init: function() { if (!this.ctx) { const AudioContext = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioContext(); } },
+        toggle: function() {
+            const btn = document.getElementById('sound-btn'); const trackBtn = document.getElementById('track-btn');
+            if (this.isOn) { this.stopBGM(); this.isOn = false; btn.textContent = '🔇'; btn.classList.remove('on'); trackBtn.classList.remove('on'); } 
+            else { this.init(); if (this.ctx.state === 'suspended') this.ctx.resume(); this.startBGM(); this.isOn = true; btn.textContent = '🔊'; btn.classList.add('on'); trackBtn.classList.add('on'); this.playClick(); this.showToast(`Now Playing: ${this.tracks[this.currentTrackIndex].name}`); }
+        },
+        changeTrack: function() {
+            if(!this.isOn) { this.toggle(); return; }
+            this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+            this.startBGM(); this.playClick();
+            const trackBtn = document.getElementById('track-btn'); trackBtn.style.transform = "rotate(360deg)"; setTimeout(() => trackBtn.style.transform = "none", 300);
+            this.showToast(`Track: ${this.tracks[this.currentTrackIndex].name}`);
+        },
+        showToast: function(msgText) {
+            const msg = document.getElementById('msg-box'); msg.textContent = "🎵 " + msgText; msg.style.color = "var(--hue-cyan)";
+            setTimeout(() => { if(msg.textContent.includes("🎵")) { msg.textContent = ""; msg.style.color = ""; } }, 2000);
+        },
+        startBGM: function() {
+            if (this.bgmInterval) clearInterval(this.bgmInterval);
+            const track = this.tracks[this.currentTrackIndex];
+            const beatTime = (60 / track.tempo) * 1000 / 2;
+            this.bgmInterval = setInterval(() => {
+                if (!this.isOn || !this.ctx) return;
+                if (Math.random() > track.probSkip) {
+                    let freq = track.notes[this.noteIndex];
+                    if (Math.random() < track.probOctave) freq *= 2;
+                    this.playSynthNote(freq, track.filterBase);
+                }
+                this.noteIndex = (this.noteIndex + 1) % track.notes.length;
+            }, beatTime);
+        },
+        stopBGM: function() { clearInterval(this.bgmInterval); },
+        playSynthNote: function(freq, filterBase) {
+            if(this.ctx.state !== 'running') return;
+            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain(); const filter = this.ctx.createBiquadFilter();
+            osc.type = 'sawtooth'; osc.frequency.value = freq / 2;
+            const randomFilterMod = (Math.random() - 0.5) * 100; filter.type = 'lowpass'; filter.frequency.value = filterBase + randomFilterMod; filter.Q.value = 1;
+            osc.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            const now = this.ctx.currentTime; osc.start(now); gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); osc.stop(now + 0.21);
+        },
+        playClick: function() {
+            if (!this.isOn || !this.ctx) return;
+            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(800, this.ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.05, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+        },
+        playError: function() {
+            if (!this.isOn || !this.ctx) return;
+            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 0.3);
+            const lfo = this.ctx.createOscillator(); lfo.frequency.value = 20; const lfoGain = this.ctx.createGain(); lfoGain.gain.value = 500; lfo.connect(lfoGain); lfoGain.connect(osc.frequency); lfo.start();
+            gain.gain.setValueAtTime(0.15, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+            osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.3); lfo.stop(this.ctx.currentTime + 0.3);
+        },
+        playWin: function() {
+            if (!this.isOn || !this.ctx) return;
+            const now = this.ctx.currentTime;
+            [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => { 
+                const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+                osc.type = 'triangle'; osc.frequency.value = freq; gain.gain.setValueAtTime(0, now + i*0.08); gain.gain.linearRampToValueAtTime(0.1, now + i*0.08 + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.08 + 0.4); osc.connect(gain); gain.connect(this.ctx.destination); osc.start(now + i*0.08); osc.stop(now + i*0.08 + 0.5);
+            });
+        },
+        playRestore: function() { 
+            if (!this.isOn || !this.ctx) return;
+            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(440, this.ctx.currentTime); osc.frequency.linearRampToValueAtTime(880, this.ctx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0, this.ctx.currentTime); gain.gain.linearRampToValueAtTime(0.1, this.ctx.currentTime + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+            osc.connect(gain); gain.connect(this.ctx.destination); osc.start(); osc.stop(this.ctx.currentTime + 0.3);
+        }
+    };
+
     const classicColors = [
         {name: "Cyber Yellow", hex: "#ffd300"}, {name: "Neon Blue", hex: "#4d4dff"},
         {name: "Matrix Green", hex: "#00ff41"}, {name: "Hot Pink", hex: "#ff69b4"},
@@ -280,7 +458,7 @@
         {name: "Teal", hex: "#008080"}, {name: "Crimson", hex: "#dc143c"}
     ];
 
-    let state = { target: null, analysis: null, lives: 5, attempts: 0, isGameOver: false, isRift: false };
+    let state = { target: null, analysis: null, lives: 5, attempts: 0, isGameOver: false, isRift: false, streak: 0, currentTolerance: gameConfig.baseTolerance };
 
     function generateRiftColor() {
         const r = Math.floor(Math.random() * 256);
@@ -298,14 +476,27 @@
         const btns = document.querySelectorAll('.radio-btn');
         btns.forEach(btn => { const newBtn = btn.cloneNode(true); btn.parentNode.replaceChild(newBtn, btn); });
         document.querySelectorAll('.radio-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) { const input = this.querySelector('input'); if(input) input.checked = true; });
+            btn.addEventListener('click', function(e) { 
+                audioCtrl.playClick();
+                const input = this.querySelector('input'); 
+                if(input) input.checked = true; 
+            });
         });
     }
 
     function setupInputValidation() {
         ['in-r', 'in-g', 'in-b'].forEach(id => {
             const el = document.getElementById(id);
+            // 键盘弹起优化：聚焦时缩小色块，失焦时恢复
+            el.addEventListener('focus', function(e) {
+                document.getElementById('game-container').classList.add('keyboard-active');
+            });
+            el.addEventListener('blur', function(e) {
+                document.getElementById('game-container').classList.remove('keyboard-active');
+            });
+
             el.addEventListener('input', function(e) {
+                audioCtrl.playClick();
                 let val = this.value.replace(/[^0-9]/g, '');
                 if(val.length > 1 && val.startsWith('0')) val = val.substring(1);
                 if(val !== '') { const num = parseInt(val); if(num > 255) val = '255'; }
@@ -351,15 +542,37 @@
         return { light, sat, primary, secondary, rgb, hsl };
     }
 
+    function calculateDifficulty() {
+        if (!gameConfig.enableDynamicDifficulty) {
+            const map = { 'EASY': 0.20, 'NORMAL': 0.15, 'HARD': 0.10 };
+            state.currentTolerance = map[gameConfig.staticDifficulty] || 0.15;
+        } else {
+            let newTol = gameConfig.baseTolerance - (state.streak * gameConfig.difficultyStep);
+            state.currentTolerance = Math.max(newTol, gameConfig.minTolerance);
+        }
+        updateStatusUI();
+    }
+
+    function updateStatusUI() {
+        const tolDisplay = document.getElementById('tolerance-display');
+        const streakDisplay = document.getElementById('streak-display');
+        const pct = Math.round(state.currentTolerance * 100);
+        tolDisplay.textContent = `${pct}%`;
+        if (pct <= 8) tolDisplay.className = 'status-value danger';
+        else tolDisplay.className = 'status-value';
+        streakDisplay.textContent = state.streak;
+    }
+
     function startNewGame() {
-        state.lives = 5;
+        state.lives = 5; state.streak = 0; 
         document.body.classList.remove('critical-error');
         loadLevel();
     }
 
     function loadLevel() {
-        state.attempts = 0;
-        state.isGameOver = false;
+        state.attempts = 0; state.isGameOver = false;
+        calculateDifficulty(); 
+
         const isRiftMode = Math.random() > 0.6;
         state.target = isRiftMode ? generateRiftColor() : classicColors[Math.floor(Math.random() * classicColors.length)];
         state.analysis = analyzeTarget(state.target.hex);
@@ -379,7 +592,7 @@
         document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
         
         document.getElementById('submit-rgb-btn').disabled = false;
-        document.getElementById('submit-rgb-btn').textContent = "开始匹配";
+        document.getElementById('submit-rgb-btn').textContent = "锁定匹配";
 
         const box = document.getElementById('color-box');
         box.style.opacity = 0;
@@ -408,7 +621,35 @@
     }
 
     function handleNextLevel() {
+        audioCtrl.playClick();
         if (state.lives <= 0) startNewGame(); else loadLevel();
+    }
+
+    function renderSpectrumHUD(light, sat, h1, h2) {
+        const hud = document.getElementById('spectrum-hud');
+        
+        const lightTxt = light === 'bright' ? '☀ 明亮' : '☾ 暗淡';
+        const lightHint = light === 'bright' ? 'AVG > 128' : 'AVG < 128';
+        const lightCls = light === 'bright' ? 'tag-bright' : 'tag-dark';
+        const satTxt = sat === 'high' ? '▲ 鲜艳' : '▼ 灰蒙';
+        const satHint = sat === 'high' ? 'Diff High' : 'Diff Low';
+        
+        const h1Map = { red: '红', yellow: '黄', green: '绿', cyan: '青', blue: '蓝', magenta: '品红' };
+        const h1HintMap = { red: 'R ≈ MAX', yellow: 'RG High', green: 'G ≈ MAX', cyan: 'GB High', blue: 'B ≈ MAX', magenta: 'RB High' };
+        const h2Map = { ...h1Map, none: '无' };
+        
+        const createItem = (label, tag, hint, colorClass) => `
+            <div class="hud-item">
+                <span class="hud-tag ${colorClass}">${tag}</span>
+                <span class="hud-hint">${hint}</span>
+            </div>
+        `;
+        hud.innerHTML = `
+            ${createItem('Light', lightTxt, lightHint, lightCls)}
+            ${createItem('Sat', satTxt, satHint, 'tag-cyan')}
+            ${createItem('Pri', h1Map[h1], h1HintMap[h1], `tag-${h1}`)}
+            ${createItem('Sec', h2Map[h2], h2 === 'none' ? 'Pure' : 'Mix', h2 === 'none' ? 'tag-dark' : `tag-${h2}`)}
+        `;
     }
 
     function submitPhase1() {
@@ -430,15 +671,20 @@
         if(hue2 !== state.analysis.secondary) errs.push("辅色调判断错误");
 
         if(errs.length > 0) {
+            audioCtrl.playError();
             shakeUI(`分析有误：${errs[0]}`);
         } else {
+            audioCtrl.playClick();
+            
+            renderSpectrumHUD(light, sat, hue1, hue2);
+
             const p1 = document.getElementById('phase-1');
             p1.style.opacity = 0; p1.style.transform = 'translateY(-10px)';
             setTimeout(() => {
                 p1.classList.remove('active');
                 const p2 = document.getElementById('phase-2');
                 p2.classList.add('active');
-                document.getElementById('msg-box').textContent = "✔ 光谱已锁定，请输入 RGB 数值";
+                document.getElementById('msg-box').textContent = "✔ 光谱已锁定"; 
                 document.getElementById('msg-box').style.color = 'var(--hue-green)';
                 setTimeout(() => document.getElementById('in-r').focus(), 300);
             }, 300);
@@ -463,13 +709,14 @@
         state.attempts++;
         const targetRGB = state.analysis.rgb;
         const diffPercent = (Math.abs(r-targetRGB.r) + Math.abs(g-targetRGB.g) + Math.abs(b-targetRGB.b)) / (255*3);
-        const isWin = diffPercent < 0.15;
+        const isWin = diffPercent < state.currentTolerance;
 
         addHistoryItem(r, g, b, targetRGB, isWin);
 
         if(isWin) {
             endGame(true);
         } else {
+            audioCtrl.playError();
             state.lives--;
             renderLives();
             if(state.lives <= 0) endGame(false);
@@ -509,12 +756,25 @@
         const btn = document.getElementById('next-btn');
 
         if(win) {
-            msg.innerHTML = "🎉 校准成功！色彩感知力惊人！";
+            audioCtrl.playWin();
+            state.streak++;
+            let extraMsg = "";
+            if (state.streak % 3 === 0) {
+                if (state.lives < 5) {
+                    state.lives++;
+                    renderLives();
+                    audioCtrl.playRestore();
+                    extraMsg = "<br><span style='color:var(--hue-cyan); font-size:0.8em'>系统修复: 生命值 +1</span>";
+                }
+            }
+            msg.innerHTML = `🎉 校准成功！连胜 x${state.streak}${extraMsg}`;
             msg.style.color = 'var(--hue-green)';
             fireConfetti();
             btn.textContent = "⚡ 继续下一轮校准";
             btn.className = "btn secondary";
         } else {
+            state.streak = 0;
+            audioCtrl.playError();
             document.body.classList.add('critical-error');
             msg.innerHTML = `<span class="glitch-text" data-text="系统严重故障">系统严重故障</span><br><span style="font-size:0.85em; color:#fff; font-weight:normal; opacity:0.8">正确代码: ${state.analysis.rgb.r} . ${state.analysis.rgb.g} . ${state.analysis.rgb.b}</span>`;
             msg.style.color = 'var(--hue-red)';
@@ -522,10 +782,12 @@
             btn.className = "btn glitch-btn";
             if(navigator.vibrate) navigator.vibrate([100,50,100,50,500]);
         }
+        updateStatusUI(); 
         document.getElementById('phase-end').classList.add('active');
     }
 
     function shakeUI(text) {
+        audioCtrl.playError();
         const container = document.getElementById('game-container');
         const msg = document.getElementById('msg-box');
         msg.textContent = text;
